@@ -1,0 +1,90 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:8.9.4 
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run: yarn install
+      - run:
+          name: copy config file
+          command: cp server/config/environment/index.base.js server/config/environment/index.js
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+        
+      # run tests!
+      - run: yarn test
+
+
+  deploy-develop:
+    docker:
+      - image: circleci/node:8.9
+    environment:
+      - ANSIBLE_HOST_KEY_CHECKING: false
+    working_directory: /tmp/pu-organization  
+    steps:
+      - run: |
+          sudo apt-get update &&
+          sudo apt-get install software-properties-common &&
+          sudo apt-add-repository "deb http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main" -y &&
+          sudo apt-get update &&
+          sudo apt-get install ansible
+      - checkout
+      - run:
+          name: Deploy if tests pass and branch is develop
+          command: ansible-playbook deploy/main.yml -i ./deploy/inventory --extra-vars "env=develop"
+
+  deploy-stage:
+    docker:
+      - image: circleci/node:8.9
+    environment:
+      - ANSIBLE_HOST_KEY_CHECKING: false
+    working_directory: /tmp/pu-organization  
+    steps:
+      - run: |
+          sudo apt-get update &&
+          sudo apt-get install software-properties-common &&
+          sudo apt-add-repository "deb http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main" -y &&
+          sudo apt-get update &&
+          sudo apt-get install ansible
+      - checkout
+      - run:
+          name: Deploy if tests pass and branch is stage
+          command: ansible-playbook deploy/stage.yml -i ./deploy/inventory --extra-vars "env=stg"
+
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - build
+      - deploy-develop:
+          requires:
+            - build
+          filters:
+            branches:
+              only: develop
+      - deploy-stage:
+          requires:
+            - build
+          filters:
+            branches:
+              only: stage

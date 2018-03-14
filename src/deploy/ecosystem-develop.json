@@ -1,0 +1,13 @@
+{
+  "apps": [
+    {
+      "name": "user",
+      "script": "dist/build.js",
+      "watch": false,
+      "env": {
+        "NODE_ENV": "develop",
+        "GOOGLE_APPLICATION_CREDENTIALS": "/home/ubuntu/gcredentials/service_account.json"
+      }
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "extends": ["standard"],
+  "rules": {
+      "node/exports-style": ["error", "module.exports"]
+  }
+}

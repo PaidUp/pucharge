@@ -1,0 +1,13 @@
+{
+  "apps": [
+    {
+      "name": "charge",
+      "script": "dist/build.js",
+      "watch": false,
+      "env": {
+        "NODE_ENV": "stage",
+        "GOOGLE_APPLICATION_CREDENTIALS": "/home/ubuntu/gcredentials/service_account.json"
+      }
+    }
+  ]
+}

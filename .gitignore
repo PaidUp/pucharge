@@ -1,0 +1,6 @@
+node_modules
+*.log
+*.retry
+dist/
+.idea
+src/config/environment/index.js

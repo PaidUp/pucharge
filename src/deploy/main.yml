@@ -1,0 +1,60 @@
+- hosts: '{{env}}'
+
+  vars:
+    workspace: /home/ubuntu/PUCharge
+    config: /home/ubuntu/PUChargeConfig
+    acceptable_env: ['develop', 'stage', 'production']
+
+  tasks:
+  - fail: msg="unsupported environment"
+    when: env not in acceptable_env
+
+  - name: Pull sources from the repository.
+    git: 
+      repo: git@github.com:PaidUp/PUCharge.git
+      dest: '{{ workspace }}'
+      version: '{{ env }}'
+      accept_hostkey: yes
+      force: yes
+
+  - name: Pull sources from the repository.
+    git: 
+      repo: git@github.com:PaidUp/PUChargeConfig.git
+      dest: '{{ config }}'
+      version: master
+      accept_hostkey: yes
+      force: yes
+
+  - name: copy config
+    copy:
+      src: '{{config}}/{{env}}.js'
+      dest: '{{workspace}}/src/config/environment/{{env}}.js'
+      remote_src: yes
+
+  - name: copy config base
+    copy:
+      src: '{{workspace}}/src/config/environment/index.base.js'
+      dest: '{{workspace}}/src/config/environment/index.js'
+      remote_src: yes
+
+  - name: install node modules
+    shell: npm install
+    args:
+      chdir: '{{ workspace }}'
+
+  - name: NODE | Stop APP
+    shell: pm2 stop user
+    args:
+      chdir: '{{ workspace }}'
+    ignore_errors: yes
+
+  - name: NODE | Start APP
+    shell: "webpack && pm2 start deploy/ecosystem-{{env}}.json"
+    args:
+      chdir: '{{ workspace }}'
+
+  - name: Clean artifact path
+    file:
+      state: absent
+      path: "{{ config }}"
+ 
