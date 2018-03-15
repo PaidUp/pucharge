@@ -24,7 +24,7 @@ jobs:
       - run: yarn install
       - run:
           name: copy config file
-          command: cp server/config/environment/index.base.js server/config/environment/index.js
+          command: cp src/config/environment/index.base.js src/config/environment/index.js
 
       - save_cache:
           paths:
@@ -32,7 +32,7 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
         
       # run tests!
-      - run: yarn test
+      # - run: yarn test
 
 
   deploy-develop:
@@ -75,7 +75,7 @@ workflows:
   version: 2
   build-deploy:
     jobs:
-      - build
+      #- build
       - deploy-develop:
           requires:
           filters:
