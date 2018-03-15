@@ -78,7 +78,6 @@ workflows:
       - build
       - deploy-develop:
           requires:
-            - build
           filters:
             branches:
               only: develop
