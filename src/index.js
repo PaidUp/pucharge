@@ -1,18 +1,27 @@
-import { MongoClient } from 'mongodb'
+import { MongoClient, ObjectID } from 'mongodb'
 import config from './config/environment'
 import sqs from 'sqs'
 import strp from 'stripe'
 const stripe = strp(config.stripe.key)
 const queue = sqs(config.sqs.credentials)
 
-function updateInvoice (charge) {
+function updateInvoice (invoice, charge) {
   return new Promise((resolve, reject) => {
+    let client
+    charge.created = new Date()
     try {
-      MongoClient.connect(config.mongo.url, (err, db) => {
+      MongoClient.connect(config.mongo.url, (err, cli) => {
+        client = cli
         if (err) return reject(err)
-        resolve(db)
+        const col = client.db(config.mongo.db).collection(config.mongo.collection)
+        col.updateOne({ _id: ObjectID(invoice) }, { $set: {status: charge.status}, $inc: {__v: 1}, $push: {attempts: charge} }, function (err, r) {
+          if (err) return reject(err)
+          client.close()
+          resolve(r)
+        })
       })
     } catch (error) {
+      client.close()
       reject(error)
     }
   })
@@ -31,7 +40,11 @@ function charge ({amount, paidupFee, externalCustomerId, externalPaymentMethodId
       statement_descriptor: statementDescriptor,
       metadata
     }, function (err, charge) {
-      if (err) return reject(err)
+      if (err) {
+        err.invoice = metadata._invoice
+        return reject(err)
+      }
+      charge.invoice = metadata._invoice
       return resolve(charge)
     })
   })
@@ -42,7 +55,8 @@ function pull () {
     const param = {
       amount: invoice.price,
       paidupFee: invoice.paidupFee,
-      externalCustomerId: invoice.paymentDetails.externalPaymentMethodId,
+      externalPaymentMethodId: invoice.paymentDetails.externalPaymentMethodId,
+      externalCustomerId: invoice.paymentDetails.externalCustomerId,
       connectAccount: invoice.connectAccount,
       description: invoice.label,
       statementDescriptor: invoice.paymentDetails.statementDescriptor,
@@ -54,11 +68,25 @@ function pull () {
       }
     }
     charge(param)
-      .then(charge => updateInvoice(charge))
-      .then(res => callback())
-      .catch(reason => {
-        console.log(reason)
+      .then(charge => updateInvoice(invoice._id, charge))
+      .then(res => {
         callback()
+      })
+      .catch(reason => {
+        if (reason.type) {
+          updateInvoice(invoice._id, {
+            type: reason.type,
+            message: reason.message,
+            code: reason.code,
+            statusCode: reason.statusCode,
+            status: 'failed'
+          }).then(res => callback()).catch(reason => callback())
+        } else {
+          updateInvoice(invoice._id, {
+            error: reason,
+            status: 'failed'
+          }).then(res => callback()).catch(reason => callback())
+        }
       })
   })
 }

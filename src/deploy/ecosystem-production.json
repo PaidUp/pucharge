@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "user",
+      "name": "charge",
       "script": "dist/build.js",
       "watch": false,
       "env": {
