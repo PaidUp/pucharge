@@ -1,5 +1,5 @@
 [develop]
-ec2-54-226-140-254.compute-1.amazonaws.com     ansible_connection=ssh        ansible_user=ubuntu     ansible_ssh_private_key_file=/Users/riclara/.ssh/develop-env.pem
+ec2-52-90-21-139.compute-1.amazonaws.com     ansible_connection=ssh        ansible_user=ubuntu     ansible_ssh_private_key_file=/Users/riclara/.ssh/develop-env.pem
 
 [stage]
 #dev.getpaidup.com     ansible_connection=ssh        ansible_user=jenkins
