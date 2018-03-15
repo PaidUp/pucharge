@@ -1,9 +1,12 @@
 import { MongoClient, ObjectID } from 'mongodb'
 import config from './config/environment'
+import { Logger } from 'pu-common'
 import sqs from 'sqs'
 import strp from 'stripe'
 const stripe = strp(config.stripe.key)
 const queue = sqs(config.sqs.credentials)
+
+Logger.setConfig(config.logger)
 
 function updateInvoice (invoice, charge) {
   return new Promise((resolve, reject) => {
@@ -51,6 +54,7 @@ function charge ({amount, paidupFee, externalCustomerId, externalPaymentMethodId
 }
 
 function pull () {
+  Logger.info('Starting Charge Invoice ' + process.env.NODE_ENV)
   queue.pull(config.sqs.queueName, config.sqs.workers, function (invoice, callback) {
     const param = {
       amount: invoice.price,
@@ -70,10 +74,13 @@ function pull () {
     charge(param)
       .then(charge => updateInvoice(invoice._id, charge))
       .then(res => {
+        Logger.info('Invoice charged successfully:  ' + invoice.invoiceId)
         callback()
       })
       .catch(reason => {
         if (reason.type) {
+          Logger.warning('Invoice charged failed:  ' + invoice.invoiceId)
+          Logger.warning(reason)
           updateInvoice(invoice._id, {
             type: reason.type,
             message: reason.message,
@@ -82,6 +89,8 @@ function pull () {
             status: 'failed'
           }).then(res => callback()).catch(reason => callback())
         } else {
+          Logger.critical('Invoice charged critical failed:  ' + invoice.invoiceId)
+          Logger.critical(reason)
           updateInvoice(invoice._id, {
             error: reason,
             status: 'failed'
@@ -90,5 +99,19 @@ function pull () {
       })
   })
 }
+
+process.on('exit', (cb) => {
+  Logger.info('bye......')
+})
+
+process.on('unhandledRejection', (err) => {
+  throw err
+})
+process.on('uncaughtException', (err) => {
+  Logger.critical(err)
+  if (process.env.NODE_ENV === 'test') {
+    process.exit(1)
+  }
+})
 
 pull()

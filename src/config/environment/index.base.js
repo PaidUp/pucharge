@@ -30,6 +30,11 @@ let all = {
   },
   stripe: {
     key: 'sk_test_wE4QBHe2SZH9wZ6uMZliup0g'
+  },
+  logger: {
+    projectId: 'gothic-talent-192920',
+    logName: 'pu-charge-local-log',
+    metadata: {resource: {type: 'global'}}
   }
 }
 

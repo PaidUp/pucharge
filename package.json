@@ -22,6 +22,7 @@
   "homepage": "https://github.com/PaidUp/PUCharge#readme",
   "dependencies": {
     "mongodb": "^3.0.4",
+    "pu-common": "git+ssh://git@github.com:PaidUp/PUCommon.git#0.16.1",
     "sqs": "^2.0.2",
     "stripe": "^5.5.0"
   },
