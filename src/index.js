@@ -42,6 +42,8 @@ function charge ({amount, paidupFee, externalCustomerId, externalPaymentMethodId
       application_fee: Math.round(paidupFee * 100),
       statement_descriptor: statementDescriptor,
       metadata
+    }, {
+      idempotency_key: metadata._invoice
     }, function (err, charge) {
       if (err) {
         err.invoice = metadata._invoice
