@@ -8,10 +8,25 @@ const queue = sqs(config.sqs.credentials)
 
 Logger.setConfig(config.logger)
 
+function getStatus (charge) {
+  let resp
+  switch (charge.status) {
+    case 'succeeded':
+      resp = 'paidup'
+      break
+    case 'pending':
+      resp = 'submitted'
+      break
+    default:
+      resp = charge.status
+  }
+  return resp
+}
+
 function updateInvoice (invoice, charge) {
   return new Promise((resolve, reject) => {
     let client
-    let status = charge.status === 'succeeded' ? 'paidup' : charge.status
+    let status = getStatus(charge.status)
     charge.created = new Date()
     try {
       MongoClient.connect(config.mongo.url, (err, cli) => {
