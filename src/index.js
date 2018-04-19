@@ -11,13 +11,14 @@ Logger.setConfig(config.logger)
 function updateInvoice (invoice, charge) {
   return new Promise((resolve, reject) => {
     let client
+    let status = charge.status === 'succeeded' ? 'paidup' : charge.status
     charge.created = new Date()
     try {
       MongoClient.connect(config.mongo.url, (err, cli) => {
         client = cli
         if (err) return reject(err)
         const col = client.db(config.mongo.db).collection(config.mongo.collection)
-        col.updateOne({ _id: ObjectID(invoice) }, { $set: {status: charge.status}, $inc: {__v: 1}, $push: {attempts: charge} }, function (err, r) {
+        col.updateOne({ _id: ObjectID(invoice) }, { $set: { status }, $inc: {__v: 1}, $push: {attempts: charge} }, function (err, r) {
           if (err) return reject(err)
           client.close()
           resolve(r)
