@@ -26,7 +26,7 @@ function getStatus (charge) {
 function updateInvoice (invoice, charge) {
   return new Promise((resolve, reject) => {
     let client
-    let status = getStatus(charge.status)
+    let status = getStatus(charge)
     charge.created = new Date()
     try {
       MongoClient.connect(config.mongo.url, (err, cli) => {
