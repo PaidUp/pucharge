@@ -69,7 +69,7 @@ jobs:
       - checkout
       - run:
           name: Deploy if tests pass and branch is stage
-          command: ansible-playbook deploy/stage.yml -i ./deploy/inventory --extra-vars "env=stg"
+          command: ansible-playbook deploy/stage.yml -i ./deploy/inventory --extra-vars "env=stage"
 
 workflows:
   version: 2
@@ -83,7 +83,6 @@ workflows:
               only: develop
       - deploy-stage:
           requires:
-            - build
           filters:
             branches:
               only: stage
