@@ -3,6 +3,8 @@ import config from './config/environment'
 import { Logger } from 'pu-common'
 import sqs from 'sqs'
 import strp from 'stripe'
+console.log('config.stripe.key: ', config.stripe.key)
+console.log('process.env.NODE_ENV: ', process.env.NODE_ENV)
 const stripe = strp(config.stripe.key)
 const queue = sqs(config.sqs.credentials)
 
