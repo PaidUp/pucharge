@@ -97,9 +97,9 @@ function pull () {
         _order: invoice.orderId,
         invoiceId: invoice.invoiceId,
         userId: invoice.user.userId,
-        userFirstName: invoice.user.firstName,
-        userLastName: invoice.user.firstName,
-        userEmail: invoice.user.email
+        userFirstName: invoice.user.userFirstName,
+        userLastName: invoice.user.userLastName,
+        userEmail: invoice.user.userEmail
       }
     }
     charge(param)
