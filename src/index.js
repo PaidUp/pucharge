@@ -46,7 +46,7 @@ function updateInvoice (invoice, charge) {
   })
 }
 
-function charge ({amount, paidupFee, externalCustomerId, externalPaymentMethodId, connectAccount, description, statementDescriptor, metadata}) {
+function charge ({amount, totalFee, externalCustomerId, externalPaymentMethodId, connectAccount, description, statementDescriptor, metadata}) {
   return new Promise((resolve, reject) => {
     stripe.charges.create({
       amount: Math.round(amount * 100),
@@ -55,7 +55,7 @@ function charge ({amount, paidupFee, externalCustomerId, externalPaymentMethodId
       customer: externalCustomerId, // cus_xx
       destination: connectAccount, // acc_xx
       description: description,
-      application_fee: Math.round(paidupFee * 100),
+      application_fee: Math.round(totalFee * 100),
       statement_descriptor: statementDescriptor,
       metadata
     }, {
@@ -76,17 +76,30 @@ function pull () {
   queue.pull(config.sqs.queueName, config.sqs.workers, function (invoice, callback) {
     const param = {
       amount: invoice.price,
-      paidupFee: invoice.paidupFee,
+      totalFee: invoice.totalFee,
       externalPaymentMethodId: invoice.paymentDetails.externalPaymentMethodId,
       externalCustomerId: invoice.paymentDetails.externalCustomerId,
       connectAccount: invoice.connectAccount,
       description: invoice.label,
       statementDescriptor: invoice.paymentDetails.statementDescriptor,
       metadata: {
+        organizationId: invoice.organizationId,
+        organizationName: invoice.organizationName,
+        productId: invoice.productId,
+        productName: invoice.productName,
+        beneficiaryId: invoice.beneficiaryId,
+        beneficiaryFirstName: invoice.beneficiaryFirstName,
+        beneficiaryLastName: invoice.beneficiaryLastName,
+        totalFee: invoice.totalFee,
+        paidupFee: invoice.paidupFee,
+        stripeFee: invoice.stripeFee,
         _invoice: invoice._id,
         _order: invoice.orderId,
         invoiceId: invoice.invoiceId,
-        userId: invoice.user.userId
+        userId: invoice.user.userId,
+        userFirstName: invoice.user.firstName,
+        userLastName: invoice.user.firstName,
+        userEmail: invoice.user.email
       }
     }
     charge(param)
