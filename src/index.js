@@ -46,7 +46,8 @@ function updateInvoice (invoice, charge) {
   })
 }
 
-function charge ({amount, totalFee, externalCustomerId, externalPaymentMethodId, connectAccount, description, statementDescriptor, metadata}) {
+function charge ({amount, totalFee, externalCustomerId, externalPaymentMethodId, connectAccount, description, statementDescriptor, metadata, paymentMethodtype, attempts}) {
+  let idempotencyKey = paymentMethodtype === 'bank_account' ? metadata._invoice + attempts : metadata._invoice
   return new Promise((resolve, reject) => {
     stripe.charges.create({
       amount: Math.round(amount * 100),
@@ -59,7 +60,7 @@ function charge ({amount, totalFee, externalCustomerId, externalPaymentMethodId,
       statement_descriptor: statementDescriptor,
       metadata
     }, {
-      idempotency_key: metadata._invoice
+      idempotency_key: idempotencyKey
     }, function (err, charge) {
       if (err) {
         err.invoice = metadata._invoice
@@ -82,6 +83,8 @@ function pull () {
       connectAccount: invoice.connectAccount,
       description: invoice.label,
       statementDescriptor: invoice.paymentDetails.statementDescriptor,
+      paymentMethodtype: invoice.paymentDetails.paymentMethodtype,
+      attempts: invoice.attempts.length,
       metadata: {
         organizationId: invoice.organizationId,
         organizationName: invoice.organizationName,
