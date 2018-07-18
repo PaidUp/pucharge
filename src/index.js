@@ -74,6 +74,20 @@ function charge ({amount, totalFee, externalCustomerId, externalPaymentMethodId,
 
 function pull () {
   Logger.info('Starting Charge Invoice ' + process.env.NODE_ENV)
+  try {
+    MongoClient.connect(config.mongo.url, (err, cli) => {
+      if (err) {
+        Logger.info('Error connected to db ' + err)
+        return false
+      } else {
+        Logger.info('Db test connection to db: ' + config.mongo.db)
+        cli.close()
+      }
+    })
+  } catch (error) {
+    return false
+  }
+
   queue.pull(config.sqs.queueName, config.sqs.workers, function (invoice, callback) {
     const param = {
       amount: invoice.price,
