@@ -18,7 +18,7 @@ function getInvoices (invoice, charge) {
         client = cli
         if (err) return reject(err)
         const col = client.db(config.mongo.db).collection(config.mongo.collection)
-        col.find({"status": "autopay", "dateCharge": {"$gte": floorDate, "$lt": topDate}}).toArray((err, docs) => {
+        col.find({'status': 'autopay', 'dateCharge': {'$gte': floorDate, '$lt': topDate}}).toArray((err, docs) => {
           if (err) return reject(err)
           client.close()
           resolve(docs)
@@ -69,7 +69,8 @@ export default class Reminder {
   }
 
   start () {
-    this.cron = schedule.scheduleJob(config.email.templates.remindercron, () => {
+    this.cron = schedule.scheduleJob(config.email.templates.reminder.cron, () => {
+      Logger.info('Start invoice remainder')
       getInvoices().then(docs => {
         docs.forEach(invoice => {
           this.email.sendTemplate(invoice.user.userEmail, config.email.templates.reminder.id, {
