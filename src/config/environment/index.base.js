@@ -35,6 +35,21 @@ let all = {
     projectId: 'gothic-talent-192920',
     logName: 'pu-charge-local-log',
     metadata: {resource: {type: 'global'}}
+  },
+  email: {
+    options: {
+      apiKey: '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',
+      fromName: 'Support',
+      fromEmail: 'support@getpaidup.com'
+    },
+    templates: {
+      reminder: {
+        id: '6d32adf5-2b25-48ae-a816-31ee49abc2e0',
+        baseUrl: 'http://localhost:8080/players',
+        days: 8,
+        cron: '0 0 10 * * *'
+      }
+    }
   }
 }
 

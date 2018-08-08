@@ -1,8 +1,10 @@
 import { MongoClient, ObjectID } from 'mongodb'
 import config from './config/environment'
+import Reminder from './reminder'
 import { Logger } from 'pu-common'
 import sqs from 'sqs'
 import strp from 'stripe'
+const reminder = new Reminder(config.email.options)
 const stripe = strp(config.stripe.key)
 const queue = sqs(config.sqs.credentials)
 
@@ -163,3 +165,4 @@ process.on('uncaughtException', (err) => {
 })
 
 pull()
+reminder.start()
