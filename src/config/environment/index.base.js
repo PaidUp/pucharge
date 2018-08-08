@@ -48,6 +48,10 @@ let all = {
         baseUrl: 'http://localhost:8080/players',
         days: 8,
         cron: '0 0 10 * * *'
+      },
+      receipt: {
+        id: 'dc44ef75-2a41-49c3-a811-7f28a0ea9a38',
+        baseUrl: 'http://localhost:8080/players'
       }
     }
   }

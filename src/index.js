@@ -1,12 +1,14 @@
 import { MongoClient, ObjectID } from 'mongodb'
 import config from './config/environment'
 import Reminder from './reminder'
-import { Logger } from 'pu-common'
+import { Logger, Email } from 'pu-common'
+import CommonUtil from './commonUtil'
 import sqs from 'sqs'
 import strp from 'stripe'
 const reminder = new Reminder(config.email.options)
 const stripe = strp(config.stripe.key)
 const queue = sqs(config.sqs.credentials)
+const email = new Email(config.email.options)
 
 Logger.setConfig(config.logger)
 
@@ -124,7 +126,19 @@ function pull () {
     charge(param)
       .then(charge => updateInvoice(invoice._id, charge))
       .then(res => {
-        Logger.info('Invoice charged successfully:  ' + invoice.invoiceId)
+        Logger.info('Invoice charged successfully:  ' + res.invoiceId)
+        email.sendTemplate(res.user.userEmail, config.email.templates.receipt.id, {
+          invoiceId: res.invoiceId,
+          invoiceURL: config.email.templates.receipt.baseUrl + '/' + res.beneficiaryId,
+          orgName: res.organizationName,
+          userFirstName: res.user.userFirstName,
+          beneficiaryFirstName: res.beneficiaryFirstName,
+          beneficiaryLastName: res.beneficiaryLastName,
+          productName: res.productName,
+          trxAmount: res.price,
+          trxAccount: `${invoice.paymentDetails.brand}••••${invoice.paymentDetails.last4}`,
+          invoices: CommonUtil.buildTableInvoice(res)
+        })
         callback()
       })
       .catch(reason => {
