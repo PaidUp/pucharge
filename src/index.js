@@ -136,7 +136,7 @@ function pull () {
           beneficiaryLastName: res.beneficiaryLastName,
           productName: res.productName,
           trxAmount: res.price,
-          trxAccount: `${invoice.paymentDetails.brand}••••${invoice.paymentDetails.last4}`,
+          trxAccount: `${res.paymentDetails.brand}••••${res.paymentDetails.last4}`,
           invoices: CommonUtil.buildTableInvoice(res)
         })
         callback()
