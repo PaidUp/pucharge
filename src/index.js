@@ -1,5 +1,6 @@
 import { MongoClient, ObjectID } from 'mongodb'
 import config from './config/environment'
+import numeral from 'numeral'
 import Reminder from './reminder'
 import { Logger, Email } from 'pu-common'
 import CommonUtil from './commonUtil'
@@ -37,10 +38,10 @@ function updateInvoice (invoice, charge) {
         client = cli
         if (err) return reject(err)
         const col = client.db(config.mongo.db).collection(config.mongo.collection)
-        col.updateOne({ _id: ObjectID(invoice) }, { $set: { status }, $inc: {__v: 1}, $push: {attempts: charge} }, function (err, r) {
+        col.findOneAndUpdate({ _id: ObjectID(invoice) }, { $set: { status }, $inc: {__v: 1}, $push: {attempts: charge} }, { returnOriginal: false }, (err, r) => {
           if (err) return reject(err)
           client.close()
-          resolve(r)
+          resolve(r.value)
         })
       })
     } catch (error) {
@@ -135,8 +136,9 @@ function pull () {
           beneficiaryFirstName: res.beneficiaryFirstName,
           beneficiaryLastName: res.beneficiaryLastName,
           productName: res.productName,
-          trxAmount: res.price,
+          trxAmount: '$' + numeral(res.price).format('0,0.00'),
           trxAccount: `${res.paymentDetails.brand}••••${res.paymentDetails.last4}`,
+          trxDesc: res.label,
           invoices: CommonUtil.buildTableInvoice(res)
         })
         callback()
