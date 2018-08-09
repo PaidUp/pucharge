@@ -8,7 +8,7 @@ const dayMs = 86400000
 
 function getInvoices (invoice, charge) {
   return new Promise((resolve, reject) => {
-    const ms = new Date().getTime() + (dayMs * config.email.templates.reminder.days)
+    const ms = new Date().setHours(0, 0, 0, 0) + (dayMs * config.email.templates.reminder.days)
     const floorDate = new Date(ms)
     const topDate = new Date(ms + dayMs)
     let client
