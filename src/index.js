@@ -51,8 +51,8 @@ function updateInvoice (invoice, charge) {
   })
 }
 
-function charge ({amount, totalFee, externalCustomerId, externalPaymentMethodId, connectAccount, description, statementDescriptor, metadata, paymentMethodtype, attempts}) {
-  let idempotencyKey = paymentMethodtype === 'bank_account' ? metadata._invoice + attempts : metadata._invoice
+function charge ({id, amount, totalFee, externalCustomerId, externalPaymentMethodId, connectAccount, description, statementDescriptor, metadata, idempotencyKey}) {
+  const idempotency = idempotencyKey ? idempotencyKey + id : id
   return new Promise((resolve, reject) => {
     stripe.charges.create({
       amount: Math.round(amount * 100),
@@ -65,7 +65,7 @@ function charge ({amount, totalFee, externalCustomerId, externalPaymentMethodId,
       statement_descriptor: statementDescriptor,
       metadata
     }, {
-      idempotency_key: idempotencyKey
+      idempotency_key: idempotency
     }, function (err, charge) {
       if (err) {
         err.invoice = metadata._invoice
@@ -95,6 +95,7 @@ function pull () {
 
   queue.pull(config.sqs.queueName, config.sqs.workers, function (invoice, callback) {
     const param = {
+      id: invoice._id,
       amount: invoice.price,
       totalFee: invoice.totalFee,
       externalPaymentMethodId: invoice.paymentDetails.externalPaymentMethodId,
@@ -102,8 +103,6 @@ function pull () {
       connectAccount: invoice.connectAccount,
       description: invoice.label,
       statementDescriptor: invoice.paymentDetails.statementDescriptor,
-      paymentMethodtype: invoice.paymentDetails.paymentMethodtype,
-      attempts: invoice.attempts.length,
       metadata: {
         organizationId: invoice.organizationId,
         organizationName: invoice.organizationName,
@@ -122,7 +121,8 @@ function pull () {
         userFirstName: invoice.user.userFirstName,
         userLastName: invoice.user.userLastName,
         userEmail: invoice.user.userEmail
-      }
+      },
+      idempotencyKey: invoice.idempotencyKey
     }
     charge(param)
       .then(charge => updateInvoice(invoice._id, charge))
