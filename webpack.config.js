@@ -5,7 +5,7 @@ let wpc = {
   target: 'node',
   externals: [nodeExternals()],
   entry: './src/index.js',
-  devtool: '#eval',
+  devtool: 'source-map',
 
   output: {
     path: path.resolve(__dirname, './dist'),
