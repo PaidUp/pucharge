@@ -100,7 +100,7 @@ async function porcessCharge (invoice, cb) {
       const attempt = inv.attempts[inv.attempts.length - 1]
       const status = getStatus(attempt)
       if (status === 'paidup' || status === 'submitted') {
-        Logger.warning('Invoice had a previous charge')
+        Logger.warning('Invoice had a previous charge: ' + invoice.invoiceId)
         await collection.findOneAndUpdate({ _id }, { $set: { status }, $inc: {__v: 1} }, { returnOriginal: false })
         return
       }
