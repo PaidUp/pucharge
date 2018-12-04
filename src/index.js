@@ -25,7 +25,7 @@ function getStatus (charge) {
       resp = 'submitted'
       break
     default:
-      resp = charge.status
+      resp = charge.status || 'failed'
   }
   return resp
 }
@@ -121,7 +121,6 @@ async function porcessCharge (invoice, cb) {
       trxDesc: res.label,
       invoices: CommonUtil.buildTableInvoice(res)
     })
-    cb()
   } catch (reason) {
     if (reason.type) {
       Logger.warning('Invoice charged failed:  ' + invoice.invoiceId)
@@ -131,14 +130,11 @@ async function porcessCharge (invoice, cb) {
         setValues.status = 'autopay'
         setValues.idempotencyKey = randomstring.generate(5)
       }
-      await collection.findOneAndUpdate({ _id }, { $set: setValues, $inc: {__v: 1}, $push: {attempts: reason} }, { returnOriginal: false })
+      await collection.update({ _id }, { $set: setValues, $inc: {__v: 1}, $push: {attempts: reason} })
     } else {
       Logger.critical('Invoice charged critical failed:  ' + invoice.invoiceId)
       Logger.critical(reason.message)
-      await updateInvoice(_id, {
-        error: reason.message,
-        status: 'failed'
-      })
+      await collection.update({ _id }, { $set: {status: 'failed'}, $inc: {__v: 1}, $push: {attempts: {error: reason.message}} })
     }
   } finally {
     cb()
