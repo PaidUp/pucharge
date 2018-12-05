@@ -95,7 +95,7 @@ async function porcessCharge (invoice, cb) {
       const status = getStatus(attempt)
       if (status === 'paidup' || status === 'submitted') {
         Logger.warning('Invoice had a previous charge: ' + invoice.invoiceId)
-        await collection.update({ _id }, { $set: { status }, $inc: {__v: 1} })
+        await collection.updateOne({ _id }, { $set: { status }, $inc: {__v: 1} })
         return
       }
     }
@@ -124,11 +124,11 @@ async function porcessCharge (invoice, cb) {
         setValues.status = 'autopay'
         setValues.idempotencyKey = randomstring.generate(5)
       }
-      await collection.update({ _id }, { $set: setValues, $inc: {__v: 1}, $push: {attempts: reason} })
+      await collection.updateOne({ _id }, { $set: setValues, $inc: {__v: 1}, $push: {attempts: reason} })
     } else {
       Logger.critical('Invoice charged critical failed:  ' + invoice.invoiceId)
       Logger.critical(reason.message)
-      await collection.update({ _id }, { $set: {status: 'failed'}, $inc: {__v: 1}, $push: {attempts: {error: reason.message}} })
+      await collection.updateOne({ _id }, { $set: {status: 'failed'}, $inc: {__v: 1}, $push: {attempts: {error: reason.message}} })
     }
   } finally {
     cb()
