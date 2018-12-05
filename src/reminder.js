@@ -13,16 +13,17 @@ function getInvoices (invoice, charge) {
     const topDate = new Date(ms + dayMs)
     let client
     try {
-      MongoClient.connect(config.mongo.url, (err, cli) => {
-        client = cli
-        if (err) return reject(err)
-        const col = client.db(config.mongo.db).collection(config.mongo.collection)
-        col.find({'status': 'autopay', 'dateCharge': {'$gte': floorDate, '$lt': topDate}}).toArray((err, docs) => {
+      MongoClient.connect(config.mongo.url, {useNewUrlParser: true},
+        (err, cli) => {
+          client = cli
           if (err) return reject(err)
-          client.close()
-          resolve(docs)
+          const col = client.db(config.mongo.db).collection(config.mongo.collection)
+          col.find({'status': 'autopay', 'dateCharge': {'$gte': floorDate, '$lt': topDate}}).toArray((err, docs) => {
+            if (err) return reject(err)
+            client.close()
+            resolve(docs)
+          })
         })
-      })
     } catch (error) {
       client.close()
       reject(error)

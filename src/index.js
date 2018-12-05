@@ -15,19 +15,13 @@ let collection
 
 Logger.setConfig(config.logger)
 
+const mapStatus = new Map([
+  [ 'succeeded', 'paidup' ],
+  [ 'pending', 'submitted' ]
+])
+
 function getStatus (charge) {
-  let resp
-  switch (charge.status) {
-    case 'succeeded':
-      resp = 'paidup'
-      break
-    case 'pending':
-      resp = 'submitted'
-      break
-    default:
-      resp = charge.status || 'failed'
-  }
-  return resp
+  return mapStatus.get(charge.status) || charge.status || 'failed'
 }
 
 async function updateInvoice (_id, charge) {
@@ -101,7 +95,7 @@ async function porcessCharge (invoice, cb) {
       const status = getStatus(attempt)
       if (status === 'paidup' || status === 'submitted') {
         Logger.warning('Invoice had a previous charge: ' + invoice.invoiceId)
-        await collection.findOneAndUpdate({ _id }, { $set: { status }, $inc: {__v: 1} }, { returnOriginal: false })
+        await collection.update({ _id }, { $set: { status }, $inc: {__v: 1} })
         return
       }
     }
@@ -144,18 +138,19 @@ async function porcessCharge (invoice, cb) {
 function pull () {
   Logger.info('Starting Charge Invoice ' + process.env.NODE_ENV)
   try {
-    MongoClient.connect(config.mongo.url, (err, cli) => {
-      if (err) {
-        Logger.info('Error connected to db ' + err)
-        return false
-      } else {
-        Logger.info('Db test connection to db: ' + config.mongo.db)
-        collection = cli.db(config.mongo.db).collection(config.mongo.collection)
-        queue.pull(config.sqs.queueName, config.sqs.workers, function (invoice, callback) {
-          porcessCharge(invoice, callback)
-        })
-      }
-    })
+    MongoClient.connect(config.mongo.url, {useNewUrlParser: true},
+      (err, cli) => {
+        if (err) {
+          Logger.info('Error connected to db ' + err)
+          return false
+        } else {
+          Logger.info('Db test connection to db: ' + config.mongo.db)
+          collection = cli.db(config.mongo.db).collection(config.mongo.collection)
+          queue.pull(config.sqs.queueName, config.sqs.workers, function (invoice, callback) {
+            porcessCharge(invoice, callback)
+          })
+        }
+      })
   } catch (error) {
     return false
   }
