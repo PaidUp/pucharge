@@ -57,7 +57,7 @@ let all = {
   },
   zendesk: {
     urlBaseLink: 'http://localhost:8080/players',
-    username: 'ricardo@getpaidup.com',
+    username: 'felipe@getpaidup.com',
     token: '6ON1frWgVv8acTGZNnabBMjj500JZA8vmGK2rNeb',
     subdomain: 'getpaidup1478060212',
     assignee: '14532798047',
