@@ -129,7 +129,9 @@ async function porcessCharge (invoice, cb) {
       }
       await collection.updateOne({ _id }, { $set: setValues, $inc: {__v: 1}, $push: {attempts: reason} })
     } else {
-      Zendesk.ticketsCreate(invoice)
+      Zendesk.ticketsCreate(invoice).then(res => {
+        console.log('res: ', res)
+      })
       Logger.critical('Invoice charged critical failed:  ' + invoice.invoiceId)
       Logger.critical(reason.message)
       await collection.updateOne({ _id }, { $set: {status: 'failed'}, $inc: {__v: 1}, $push: {attempts: {error: reason.message}} })
