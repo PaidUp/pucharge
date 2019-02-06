@@ -44,7 +44,7 @@ export default class Zendesk {
     const subject = getSubject(invoice)
     const comment = getBody(invoice)
     const requesterEmail = invoice.user.userEmail
-    const requesterName = invoice.user.userFirstNamee + '' + invoice.user.userLastName
+    const requesterName = invoice.user.userFirstNamee + ' ' + invoice.user.userLastName
     const balance = invoice.price
     const invoiceId = invoice.invoiceId
 
@@ -52,7 +52,7 @@ export default class Zendesk {
       let customFields = [
         { id: ticketReasonCategoryId, value: 'ticket_category_payment_failed_new_card' },
         { id: balanceId, value: balance },
-        { id: paymentLinkId, value: invoiceId },
+        { id: paymentLinkId, value: config.zendesk.urlBaseLink + '/' + invoice.beneficiaryId },
         { id: invoiceIdId, value: invoiceId }
       ]
 
