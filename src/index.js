@@ -7,7 +7,7 @@ import CommonUtil from './commonUtil'
 import sqs from 'sqs'
 import strp from 'stripe'
 import randomstring from 'randomstring'
-import Zendesk from 'node-zendesk'
+import Zendesk from './zendesk'
 const reminder = new Reminder(config.email.options)
 const stripe = strp(config.stripe.key)
 const queue = sqs(config.sqs.credentials)
