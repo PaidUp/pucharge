@@ -44,7 +44,7 @@ export default class Zendesk {
     const subject = getSubject(invoice)
     const comment = getBody(invoice)
     const requesterEmail = invoice.user.userEmail
-    const requesterName = invoice.user.userFirstNamee + ' ' + invoice.user.userLastName
+    const requesterName = invoice.user.userFirstName + ' ' + invoice.user.userLastName
     const balance = invoice.price
     const invoiceId = invoice.invoiceId
 
