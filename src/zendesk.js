@@ -40,8 +40,8 @@ function getBody (invoice) {
 
 export default class Zendesk {
   static ticketsCreate (invoice) {
-    const subject = getSubject()
-    const comment = getBody()
+    const subject = getSubject(invoice)
+    const comment = getBody(invoice)
     const requesterEmail = invoice.user.userEmail
     const requesterName = invoice.user.userFirstNamee + '' + invoice.user.userLastName
     const balance = invoice.price
