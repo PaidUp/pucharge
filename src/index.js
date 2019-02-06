@@ -116,6 +116,29 @@ async function porcessCharge (invoice, cb) {
       trxDesc: res.label,
       invoices: CommonUtil.buildTableInvoice(res)
     })
+    const query = (`type:ticket fieldvalue:${invoice.invoiceId}`)
+    Zendesk.search(query).then(tickets => {
+      if (tickets && tickets.length) {
+        let ticket = tickets[0]
+        // let tags = ticket.tags.filter(tag => {
+        //   return tag !== 'signupautomation'
+        // })
+        // tags.push('ordercreated')
+        Zendesk.ticketsUpdate(ticket.id, {
+          ticket: {
+            status: 'open',
+            comment: {body: 'Failed payment retried successfully', public: false}
+            // tags
+          }
+        }).then(() => {
+          Logger.info('Ticket updated: ' + ticket.id)
+        }).catch(reason => {
+          Logger.critical('Zendesk.ticketsUpdate id: ' + ticket.id + ' - ' + reason.result.toString('utf8'))
+        })
+      }
+    }).catch(reason => {
+      Logger.critical('ZendeskService.search query: ' + query + ' - ' + reason.result.toString('utf8'))
+    })
   } catch (reason) {
     if (reason.type) {
       Logger.warning('Invoice charged failed:  ' + invoice.invoiceId)
