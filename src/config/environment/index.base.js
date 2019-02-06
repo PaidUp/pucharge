@@ -54,6 +54,18 @@ let all = {
         baseUrl: 'http://localhost:8080/players'
       }
     }
+  },
+  zendesk: {
+    username: 'ricardo@getpaidup.com',
+    token: '6ON1frWgVv8acTGZNnabBMjj500JZA8vmGK2rNeb',
+    subdomain: 'getpaidup1478060212',
+    assignee: '14532798047',
+    customFields: {
+      ticketReasonCategory: '48042408',
+      balance: '56485848',
+      paymentLink: '80373287',
+      invoiceId: '360014425333'
+    }
   }
 }
 

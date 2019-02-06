@@ -7,6 +7,7 @@ import CommonUtil from './commonUtil'
 import sqs from 'sqs'
 import strp from 'stripe'
 import randomstring from 'randomstring'
+import Zendesk from 'node-zendesk'
 const reminder = new Reminder(config.email.options)
 const stripe = strp(config.stripe.key)
 const queue = sqs(config.sqs.credentials)
@@ -123,9 +124,12 @@ async function porcessCharge (invoice, cb) {
       if (reason.code === 'token_in_use' && invoice.paymentDetails.paymentMethodtype === 'bank_account') {
         setValues.status = 'autopay'
         setValues.idempotencyKey = randomstring.generate(5)
+      } else {
+        Zendesk.ticketsCreate(invoice)
       }
       await collection.updateOne({ _id }, { $set: setValues, $inc: {__v: 1}, $push: {attempts: reason} })
     } else {
+      Zendesk.ticketsCreate(invoice)
       Logger.critical('Invoice charged critical failed:  ' + invoice.invoiceId)
       Logger.critical(reason.message)
       await collection.updateOne({ _id }, { $set: {status: 'failed'}, $inc: {__v: 1}, $push: {attempts: {error: reason.message}} })
