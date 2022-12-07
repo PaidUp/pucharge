@@ -50,7 +50,7 @@
     "mocha": "^2.3.4",
     "nodemon-webpack-plugin": "^0.1.6",
     "should": "^7.1.1",
-    "supertest": "^1.1.0",
+    "supertest": "^6.3.2",
     "webpack": "^3.10.0",
     "webpack-node-externals": "^1.6.0"
   }
